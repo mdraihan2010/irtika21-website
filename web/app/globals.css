@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/*
+  Irtika'21 design tokens — taken from the logo: ink black, logo gold, paper white.
+  Layout: dark "night" hero and footer frame light content sections.
+*/
+:root {
+  --paper: #faf9f6;
+  --surface: #ffffff;
+  --sunk: #f1eee6;
+  --line: #e2ddcf;
+  --ink: #141413;
+  --muted: #5d5a52;
+  --gold: #cdae52;          /* logo gold — fills, accents */
+  --gold-ink: #8a6a12;      /* gold dark enough for text on light */
+  --gold-soft: #f6eed6;
+  --night: #121211;         /* hero / footer */
+  --night-ink: #c9c4b6;
+  --night-muted: #9b968a;
+  --paper-on-night: #f3eedf;
+  --ok: #1f7a4a;
+  --danger: #b3261e;
+  --danger-soft: #fbe9e7;
+}
+
+/* Dark palette: follows the phone/computer setting unless the visitor picks a theme with the toggle */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f0f0e;
+    --surface: #181816;
+    --sunk: #20201d;
+    --line: #34332e;
+    --ink: #f1ede2;
+    --muted: #a8a397;
+    --gold: #d6b65a;
+    --gold-ink: #e0c26c;
+    --gold-soft: #2b2617;
+    --night: #070707;
+    --ok: #4cc383;
+    --danger: #f2827a;
+    --danger-soft: #3a1714;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f0f0e;
+  --surface: #181816;
+  --sunk: #20201d;
+  --line: #34332e;
+  --ink: #f1ede2;
+  --muted: #a8a397;
+  --gold: #d6b65a;
+  --gold-ink: #e0c26c;
+  --gold-soft: #2b2617;
+  --night: #070707;
+  --ok: #4cc383;
+  --danger: #f2827a;
+  --danger-soft: #3a1714;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-soft: var(--gold-soft);
+  --color-night: var(--night);
+  --color-night-ink: var(--night-ink);
+  --color-night-muted: var(--night-muted);
+  --color-paper-on-night: var(--paper-on-night);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-display: "Anek Bangla", "Hind Siliguri", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(80px + env(safe-area-inset-top));
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+  -webkit-tap-highlight-color: transparent;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top);
+  background: var(--surface);
+  z-index: 60;
+}
+h1, h2, h3 { text-wrap: balance; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Logo + theme-toggle icon per theme (.when-light / .when-dark) */
+.logo-dark, .when-dark { display: none; }
+:root[data-theme="dark"] .logo-light, :root[data-theme="dark"] .when-light { display: none; }
+:root[data-theme="dark"] .logo-dark, :root[data-theme="dark"] .when-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-light, :root:not([data-theme="light"]) .when-light { display: none; }
+  :root:not([data-theme="light"]) .logo-dark, :root:not([data-theme="light"]) .when-dark { display: block; }
+}
+
+/* Registration step 1 motion */
+@keyframes rise { from { transform: translateY(10px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.cat-card { animation: rise 0.4s ease-out both; }
+.check-pop { animation: pop 0.28s ease-out; }
+.amount-reveal { animation: reveal 0.25s ease-out; }
+
+@layer components {
+  .gutter {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 46px;
+    padding-inline: 1.25rem;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover:not(:disabled) { background: color-mix(in oklab, var(--ink) 85%, var(--gold)); }
+  .btn-gold { background: var(--gold); color: #1a1405; }
+  .btn-gold:hover:not(:disabled) { background: color-mix(in oklab, var(--gold) 88%, white); }
+  .btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
+  .btn-ghost:hover:not(:disabled) { background: var(--sunk); }
+  .btn-night { border-color: rgb(255 255 255 / 0.28); color: var(--paper-on-night); }
+  .btn-night:hover { background: rgb(255 255 255 / 0.08); }
+
+  .input {
+    width: 100%;
+    min-height: 50px;
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1rem; /* 16px stops iOS from zooming in */
+  }
+  .input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px var(--gold-soft); }
+  .input[aria-invalid="true"] { border-color: var(--danger); }
+
+  .eyebrow {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1.25rem;
+  }
+  @media (min-width: 640px) { .panel { padding: 1.75rem; } }
+
+  /* Gold triangle motif from the "২১" in the logo */
+  .tri {
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    background: var(--gold);
+  }
+}
