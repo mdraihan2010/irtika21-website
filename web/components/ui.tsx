@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
@@ -53,7 +53,7 @@ export function GiftVisual({ id, sizes, priority }: { id: GiftId; sizes: string;
   return (
     <span className="relative block aspect-square w-full overflow-hidden rounded-lg bg-gold-soft">
       {img ? (
-        <Image src={img} alt={t(`g_${id}`)} fill sizes={sizes} priority={priority} className="object-cover" />
+        <Image src={img} alt={t(`g_${id}`)} fill sizes={sizes} priority={priority} className="object-contain" />
       ) : (
         <span className="grid h-full place-items-center text-gold-ink">
           <GiftIcon id={id} className="h-1/2 w-1/2" />

@@ -1,12 +1,13 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MAX_QTY, PRODUCTS, type PayMethod, type ProductId } from "@/lib/content";
 import { cartCount, cartTotal, emptyCart, makeRef, validateOrder, type Cart, type Errors } from "@/lib/validation";
 import { DoneCard, Field, FormFooterNote, Honeypot, PaymentFields, SizePicker, StepBar, Summary, focusFirstError, postJson } from "./form-parts";
 import { useLang } from "./lang";
-import { GiftVisual, useGiftModal, useToast } from "./ui";
+import { GiftVisual, useToast } from "./ui";
 import { useDraft } from "./use-draft";
+import type { TKey } from "@/lib/i18n";
 
 type State = {
   ref: string;
@@ -38,14 +39,112 @@ const initial = (): State => ({
   website: "",
 });
 
+/* ---------- অর্ডার মোডাল: পরিমাণ + সাইজ/মাপ ---------- */
+function OrderModal({
+  productId,
+  cart,
+  size,
+  error,
+  onQty,
+  onSize,
+  onClose,
+}: {
+  productId: ProductId | null;
+  cart: Cart;
+  size: string;
+  error?: TKey;
+  onQty: (id: ProductId, qty: number) => void;
+  onSize: (v: string) => void;
+  onClose: () => void;
+}) {
+  const { t, n, money } = useLang();
+  const ref = useRef<HTMLDialogElement>(null);
+  const product = PRODUCTS.find((p) => p.id === productId);
+
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (productId && !d.open) d.showModal();
+    if (!productId && d.open) d.close();
+  }, [productId]);
+
+  if (!product) return <dialog ref={ref} onClose={onClose} />;
+
+  const q = cart[product.id];
+  const isTshirt = product.id === "tshirt";
+
+  return (
+    <dialog
+      ref={ref}
+      onClose={onClose}
+      onClick={(e) => e.target === ref.current && onClose()}
+      aria-labelledby="order-modal-title"
+      className="m-auto w-[min(440px,calc(100vw-24px))] rounded-2xl bg-surface p-0 text-ink backdrop:bg-black/60"
+    >
+      <div className="flex max-h-[85vh] flex-col gap-4 overflow-y-auto p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-28 shrink-0">
+            <GiftVisual id={product.id} sizes="112px" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 id="order-modal-title" className="font-display text-xl font-bold">{t(`g_${product.id}`)}</h3>
+            <p className="mt-1 font-mono text-lg tabular-nums text-gold-ink">{money(product.price)}</p>
+          </div>
+        </div>
+
+        {isTshirt && (
+          <div className="flex flex-col gap-3">
+            <p className="font-semibold">{t("tsize")}</p>
+            <SizePicker value={size} onChange={onSize} error={error} showTable />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-line p-3">
+          <span className="font-semibold">{t("qty")}</span>
+          <div className="flex items-center rounded-full border-[1.5px] border-ink">
+            <button
+              type="button"
+              className="h-11 w-12 text-xl"
+              onClick={() => onQty(product.id, q - 1)}
+              disabled={q <= 0}
+              aria-label={t("qtyLess")}
+            >
+              −
+            </button>
+            <span className="min-w-10 text-center font-mono text-lg tabular-nums" aria-live="polite">{n(q)}</span>
+            <button
+              type="button"
+              className="h-11 w-12 text-xl disabled:opacity-40"
+              onClick={() => onQty(product.id, q + 1)}
+              disabled={q >= MAX_QTY}
+              aria-label={t("qtyMore")}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-muted">{t("total")}</span>
+          <span className="font-mono text-lg font-semibold tabular-nums">{money(product.price * q)}</span>
+        </div>
+
+        <button type="button" className="btn btn-primary" onClick={onClose} autoFocus>
+          {t("done")}
+        </button>
+      </div>
+    </dialog>
+  );
+}
+
 export function ShopFlow() {
   const { t, n, money } = useLang();
   const toast = useToast();
-  const openGift = useGiftModal();
   const { state: s, setState, ready, clear } = useDraft<State>("irtika.order.v1", initial);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState<string | null>(null);
+  const [modalFor, setModalFor] = useState<ProductId | null>(null);
 
   const count = cartCount(s.cart);
   const total = cartTotal(s.cart);
@@ -58,8 +157,11 @@ export function ShopFlow() {
       return next;
     });
   };
-  const setQty = (id: ProductId, delta: number) =>
-    setState((prev) => ({ ...prev, cart: { ...prev.cart, [id]: Math.max(0, Math.min(MAX_QTY, prev.cart[id] + delta)) } }));
+  const setQty = (id: ProductId, qty: number) =>
+    setState((prev) => ({
+      ...prev,
+      cart: { ...prev.cart, [id]: Math.max(0, Math.min(MAX_QTY, qty)) },
+    }));
 
   const toStep = (step: 1 | 2) => {
     setState((prev) => ({ ...prev, step, ref: prev.ref || (step === 2 ? makeRef("S") : "") }));
@@ -116,34 +218,47 @@ export function ShopFlow() {
                   const q = s.cart[p.id];
                   return (
                     <li key={p.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-3">
-                      <button type="button" onClick={() => openGift(p.id)} className="block" aria-label={t(`g_${p.id}`)}>
+                      <div className="block">
                         <GiftVisual id={p.id} sizes="(min-width:1024px) 240px, 45vw" />
-                      </button>
+                      </div>
                       <div className="flex flex-wrap items-baseline justify-between gap-x-2 px-1">
                         <span className="font-semibold">{t(`g_${p.id}`)}</span>
                         <span className="font-mono tabular-nums text-gold-ink">{money(p.price)}</span>
                       </div>
-                      <div className="mt-auto">
-                        {q === 0 ? (
-                          <button type="button" className="btn btn-primary w-full" onClick={() => setQty(p.id, 1)}>
-                            {t("orderNow")}
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between rounded-full border-[1.5px] border-ink">
-                            <button type="button" className="h-11 w-12 text-xl" onClick={() => setQty(p.id, -1)} aria-label={t("qtyLess")}>
-                              −
-                            </button>
-                            <span className="font-mono text-lg tabular-nums" aria-live="polite">{n(q)}</span>
-                            <button type="button" className="h-11 w-12 text-xl disabled:opacity-40" onClick={() => setQty(p.id, 1)} disabled={q >= MAX_QTY} aria-label={t("qtyMore")}>
-                              +
-                            </button>
-                          </div>
+
+                      <div className="mt-auto flex flex-col gap-2">
+                        {q > 0 && (
+                          <p className="px-1 text-sm text-muted">
+                            {n(q)} × {money(p.price)} = <b className="font-mono text-ink">{money(p.price * q)}</b>
+                          </p>
                         )}
+                        {p.id === "tshirt" && q > 0 && s.size && (
+                          <p className="px-1 text-sm">
+                            {t("size")}: <b>{s.size}</b>
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          className="btn btn-primary w-full"
+                          onClick={() => setModalFor(p.id)}
+                        >
+                          {t("orderNow")}
+                        </button>
                       </div>
                     </li>
                   );
                 })}
               </ul>
+
+              <OrderModal
+                productId={modalFor}
+                cart={s.cart}
+                size={s.size}
+                error={errors.size}
+                onQty={setQty}
+                onSize={(v) => patch({ size: v })}
+                onClose={() => setModalFor(null)}
+              />
 
               <div className="sticky bottom-[calc(12px+env(safe-area-inset-bottom))] z-10 mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface/95 p-4 shadow-lg backdrop-blur">
                 <p className="font-semibold">
@@ -182,14 +297,13 @@ export function ShopFlow() {
                       money(p.price * s.cart[p.id]),
                     ])}
                   />
+                  {s.cart.tshirt > 0 && (
+                    <p className="text-sm">
+                      {t("tsize")}: <b>{s.size || "—"}</b>
+                    </p>
+                  )}
                   <Field id="name" label={t("fBuyer")} value={s.name} onChange={(v) => patch({ name: v })} error={errors.name} autoComplete="name" maxLength={100} />
                   <Field id="phone" label={t("fPhone")} value={s.phone} onChange={(v) => patch({ phone: v })} error={errors.phone} type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={14} />
-                  {s.cart.tshirt > 0 && (
-                    <div className="flex flex-col gap-2">
-                      <p className="font-semibold">{t("tsize")}</p>
-                      <SizePicker value={s.size} onChange={(v) => patch({ size: v })} error={errors.size} showTable={false} />
-                    </div>
-                  )}
                 </div>
                 <PaymentFields state={s} total={total} errors={errors} onChange={patch} />
               </div>

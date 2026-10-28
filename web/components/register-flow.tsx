@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { getCategory } from "@/lib/content";
@@ -30,7 +30,9 @@ const initial = (): State => ({
   department: "",
   session: "",
   studentId: "",
+  designation: "",
   email: "",
+  whatsapp: "",
   size: "",
   method: "bkash",
   sender: "",
@@ -165,10 +167,29 @@ export function RegisterFlow() {
             {s.step === 2 && cat && (
               <div className="grid gap-x-5 gap-y-4 sm:grid-cols-2">
                 <Field id="name" label={t("fName")} value={s.name} onChange={(v) => patch({ name: v })} error={errors.name} autoComplete="name" className="sm:col-span-2" maxLength={100} />
-                <Field id="department" label={t("fDept")} value={s.department} onChange={(v) => patch({ department: v })} error={errors.department} placeholder={t("phDept")} optional={!cat.studentInfo} maxLength={60} />
-                <Field id="session" label={t("fSession")} value={s.session} onChange={(v) => patch({ session: v })} error={errors.session} placeholder={t("phSession")} optional={!cat.studentInfo} maxLength={20} />
-                <Field id="studentId" label={t("fSid")} value={s.studentId} onChange={(v) => patch({ studentId: v })} error={errors.studentId} placeholder={t("phSid")} optional={!cat.studentInfo} maxLength={30} />
+                {cat.studentInfo ? (
+                  <>
+                    <Field id="department" label={t("fDept")} value={s.department} onChange={(v) => patch({ department: v })} error={errors.department} placeholder={t("phDept")} maxLength={60} />
+                    <Field id="session" label={t("fSession")} value={s.session} onChange={(v) => patch({ session: v })} error={errors.session} placeholder={t("phSession")} maxLength={20} />
+                    <Field id="studentId" label={t("fSid")} value={s.studentId} onChange={(v) => patch({ studentId: v })} error={errors.studentId} placeholder={t("phSid")} maxLength={30} />
+                  </>
+                ) : (
+                  <Field id="designation" label={t("fDesig")} value={s.designation} onChange={(v) => patch({ designation: v })} error={errors.designation} placeholder={t("phDesig")} className="sm:col-span-2" maxLength={80} />
+                )}
                 <Field id="email" label={t("fEmail")} value={s.email} onChange={(v) => patch({ email: v.trim() })} error={errors.email} hint={t("emailHint")} type="email" inputMode="email" autoComplete="email" placeholder="name@gmail.com" maxLength={120} />
+                <Field
+                  id="whatsapp"
+                  label={t("fWhatsapp")}
+                  value={s.whatsapp}
+                  onChange={(v) => patch({ whatsapp: v.replace(/[^\d+]/g, "") })}
+                  error={errors.whatsapp}
+                  hint={t("whatsappHint")}
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="01XXXXXXXXX"
+                  maxLength={11}
+                />
               </div>
             )}
 
@@ -199,10 +220,12 @@ export function RegisterFlow() {
                     refCode={s.ref}
                     total={total}
                     rows={[
-                      [t("st1"), t(`c_${cat.id}`)],
+                      [t("st1"), `${t(cat.gender === "boy" ? "boysH" : "girlsH")} · ${t(`c_${cat.id}`)}`],
                       [t("fName"), s.name],
-                      ...(s.studentId ? ([[t("fSid"), n(s.studentId)]] as [string, string][]) : []),
+                      ...(cat.studentInfo && s.studentId ? ([[t("fSid"), n(s.studentId)]] as [string, string][]) : []),
+                      ...(!cat.studentInfo && s.designation ? ([[t("fDesig"), s.designation]] as [string, string][]) : []),
                       [t("fEmail"), s.email],
+                      [t("fWhatsapp"), s.whatsapp],
                       [cat.wear === "scarf" ? t("st3s") : t("size"), cat.wear === "scarf" ? t("g_scarf") : s.size],
                     ]}
                   />

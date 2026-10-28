@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { GALLERY, GIFT_ORDER, SEGMENTS, SEGMENT_IMAGES } from "@/lib/content";
-import { useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Countdown } from "./countdown";
 import { Lightbox } from "./lightbox";
 import { useLang } from "./lang";
@@ -23,54 +23,162 @@ export function Home() {
 
 function Hero() {
   const { t } = useLang();
+  const [mounted, setMounted] = useState(false);
+  const [pointer, setPointer] = useState({ x: 0, y: 0, active: false });
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  function handleMove(e: MouseEvent<HTMLElement>) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    setPointer({
+      x: (e.clientX - r.left) / r.width - 0.5,
+      y: (e.clientY - r.top) / r.height - 0.5,
+      active: true,
+    });
+  }
+
+  function handleLeave() {
+    setPointer((p) => ({ ...p, active: false }));
+  }
+
+  const rows = [
+    ["date", "dateV"],
+    ["time", "timeV"],
+    ["venue", "venueV"],
+  ] as const;
+
+  const logoAlt = `${t("title")} — ${t("tagline")}`;
+
   return (
-    <section className="relative overflow-hidden bg-night text-night-ink">
-      {/* faint gold triangles echoing the logo's "২১" */}
-      <div aria-hidden className="tri absolute -right-24 -top-10 h-80 w-[28rem] opacity-[.07]" />
-      <div aria-hidden className="tri absolute -bottom-40 left-1/3 h-72 w-96 opacity-[.05]" />
+    <section
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="relative overflow-hidden bg-maroon-soft text-ink"
+    >
+      {/* মাউসের সাথে চলমান আলো */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500"
+        style={{
+          background: `radial-gradient(600px circle at ${(pointer.x + 0.5) * 100}% ${(pointer.y + 0.5) * 100}%, rgba(128,0,32,0.10), transparent 60%)`,
+          opacity: pointer.active ? 1 : 0,
+        }}
+      />
+
+      {/* faint triangles echoing the logo's "২১" */}
+      <div
+        aria-hidden
+        className="tri absolute -right-24 -top-10 h-80 w-[28rem] opacity-[.10]"
+        style={{
+          transform: `translate(${pointer.x * -40}px, ${pointer.y * -40}px)`,
+          transition: "transform .6s ease-out",
+        }}
+      />
+      <div
+        aria-hidden
+        className="tri absolute -bottom-40 left-1/3 h-72 w-96 opacity-[.07]"
+        style={{
+          transform: `translate(${pointer.x * 30}px, ${pointer.y * 30}px)`,
+          transition: "transform .6s ease-out",
+        }}
+      />
 
       <div className="gutter relative mx-auto grid max-w-6xl items-center gap-10 py-12 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:py-16">
-        <div className="mx-auto w-full max-w-[260px] md:max-w-[340px]">
-          <h1 className="sr-only">{t("title")}</h1>
-          <Image
-            src="/images/logo-full-dark.png"
-            alt={`${t("title")} — ${t("tagline")}`}
-            width={827}
-            height={1079}
-            priority
-            className="h-auto w-full"
-          />
+        {/* লোগো: লাইট মোডে সাদা-পটভূমির লোগো, ডার্ক মোডে কালো-পটভূমির লোগো */}
+        <div
+          className={`mx-auto w-full max-w-[260px] transition-all duration-1000 ease-out md:max-w-[340px] ${
+            mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <div
+            style={{
+              transform: `perspective(900px) rotateY(${pointer.x * 12}deg) rotateX(${pointer.y * -12}deg)`,
+              transition: "transform .4s ease-out",
+            }}
+          >
+            <h1 className="sr-only">{t("title")}</h1>
+            <Image
+              src="/images/logo-full.png"
+              alt={logoAlt}
+              width={827}
+              height={1079}
+              priority
+              className="logo-light h-auto w-full"
+            />
+            <Image
+              src="/images/logo-full-dark.png"
+              alt={logoAlt}
+              width={827}
+              height={1079}
+              priority
+              className="logo-dark h-auto w-full"
+            />
+          </div>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-6">
-          <div>
-            <p className="eyebrow !text-gold">{t("org")}</p>
-            <p className="mt-3 max-w-[54ch] text-lg text-paper-on-night/85">{t("heroLead")}</p>
+        {/* লেখা ও তথ্য: একটি হালকা কার্ডের ভেতরে, যাতে পটভূমি থেকে আলাদা দেখায় */}
+        <div className="flex min-w-0 flex-col gap-6 rounded-3xl bg-surface p-6 shadow-[0_18px_40px_-20px_rgba(128,0,32,0.35)] ring-1 ring-maroon/15 sm:p-8">
+          <div
+            className={`transition-all duration-700 ease-out ${
+              mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+            style={{ transitionDelay: "150ms" }}
+          >
+            <p className="eyebrow">{t("org")}</p>
+            <p className="mt-3 max-w-[54ch] text-lg text-ink/90">{t("heroLead")}</p>
           </div>
 
-          <dl className="grid gap-3 rounded-2xl bg-white/[.04] p-4 ring-1 ring-white/10 sm:grid-cols-[auto_1fr] sm:gap-x-5">
-            {(
-              [
-                ["date", "dateV"],
-                ["time", "timeV"],
-                ["venue", "venueV"],
-              ] as const
-            ).map(([k, v]) => (
-              <div key={k} className="contents">
-                <dt className="text-sm text-night-muted">{t(k)}</dt>
-                <dd className="-mt-2 font-semibold text-paper-on-night sm:mt-0">{t(v)}</dd>
+          <dl className="grid gap-2 rounded-2xl border border-line bg-paper p-4">
+            {rows.map(([k, v], idx) => (
+              <div
+                key={k}
+                className={`group grid gap-1 rounded-lg px-2 py-1.5 transition-all duration-500 hover:bg-sunk sm:grid-cols-[auto_1fr] sm:gap-x-5 ${
+                  mounted ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
+                }`}
+                style={{ transitionDelay: `${300 + idx * 150}ms` }}
+              >
+                <dt className="text-sm text-muted">{t(k)}</dt>
+                <dd className="font-display font-semibold text-ink transition-colors duration-300 group-hover:text-maroon-ink">
+                  {t(v)}
+                </dd>
               </div>
             ))}
           </dl>
 
-          <Countdown />
-
-          <div className="flex flex-wrap gap-3">
-            <Link href="/register" className="btn btn-gold">{t("registerNow")}</Link>
-            <Link href="/#events" className="btn btn-night">{t("seeEvents")}</Link>
+          <div
+            className={`transition-all duration-700 ease-out ${
+              mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+            style={{ transitionDelay: "700ms" }}
+          >
+            <Countdown />
           </div>
         </div>
       </div>
+
+      {/* নিচে স্ক্রল করার তীর */}
+      <a
+        href="#about"
+        aria-label="পরের সেকশনে যান"
+        className="absolute bottom-3 left-1/2 -translate-x-1/2 text-muted transition-colors hover:text-maroon-ink"
+      >
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          aria-hidden
+          className="animate-bounce"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </a>
     </section>
   );
 }
@@ -171,7 +279,7 @@ function Gifts() {
             <button
               type="button"
               onClick={() => openGift(g)}
-              className="flex w-full flex-col gap-3 rounded-2xl border border-line bg-surface p-3 text-left transition-colors hover:border-gold"
+              className="flex w-full flex-col gap-3 rounded-2xl border border-line bg-surface p-3 text-left transition-colors hover:border-maroon"
             >
               <GiftVisual id={g} sizes="(min-width:1024px) 270px, (min-width:640px) 30vw, 45vw" />
               <span className="px-1 pb-1 font-semibold">{t(`g_${g}`)}</span>
@@ -185,38 +293,96 @@ function Gifts() {
 
 function Events() {
   const { t, n } = useLang();
+  const [active, setActive] = useState<number | null>(SEGMENTS[0] ?? null);
+
   return (
     <section id="events" className="border-t border-line bg-surface">
       <div className="gutter mx-auto max-w-6xl py-16">
         <SectionHead eyebrow={t("nEvents")} title={t("evH")} />
+
         <ol className="border-t border-line">
           {SEGMENTS.map((i) => {
             const img = SEGMENT_IMAGES[i];
+            const isOpen = active === i;
+            const panelId = `segment-panel-${i}`;
+
             return (
-              <li key={i} className="grid grid-cols-[48px_minmax(0,1fr)] gap-4 border-b border-line py-6 sm:grid-cols-[72px_minmax(0,1fr)]">
-                <span className="font-display text-3xl font-bold leading-none text-gold-ink sm:text-4xl">{n(i)}</span>
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <h3 className="font-display text-xl font-semibold sm:text-2xl">{t(`e${i}`)}</h3>
-                    <p className="mt-1 max-w-[62ch] text-muted">{t(`e${i}p`)}</p>
-                  </div>
-                  {img && (
-                    <div className="relative aspect-[3/2] w-full max-w-full shrink-0 overflow-hidden rounded-xl md:w-64">
-                      <Image src={img} alt={t(`e${i}`)} fill sizes="(min-width:768px) 256px, 90vw" className="object-cover" />
+              <li key={i} className="border-b border-line">
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => setActive(isOpen ? null : i)}
+                  className="group grid w-full cursor-pointer grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4 py-6 text-left sm:grid-cols-[72px_minmax(0,1fr)_auto]"
+                >
+                  <span
+                    className={`font-display text-3xl font-bold leading-none transition-all duration-300 sm:text-4xl ${
+                      isOpen ? "scale-110 text-maroon" : "text-maroon-ink group-hover:scale-110"
+                    }`}
+                  >
+                    {n(i)}
+                  </span>
+
+                  <h3
+                    className={`font-display text-xl font-semibold transition-colors duration-300 sm:text-2xl ${
+                      isOpen ? "text-maroon-ink" : "group-hover:text-maroon-ink"
+                    }`}
+                  >
+                    {t(`e${i}`)}
+                  </h3>
+
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden
+                    className={`shrink-0 text-muted transition-transform duration-300 ${
+                      isOpen ? "rotate-180 text-maroon-ink" : "group-hover:text-maroon-ink"
+                    }`}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+
+                <div
+                  id={panelId}
+                  className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="flex flex-col gap-4 pb-6 pl-[48px] sm:pl-[72px] md:flex-row md:items-start md:justify-between md:gap-8">
+                      <p className="max-w-[62ch] text-muted">{t(`e${i}p`)}</p>
+                      {img && (
+                        <div className="relative aspect-[3/2] w-full shrink-0 overflow-hidden rounded-xl md:w-64">
+                          <Image
+                            src={img}
+                            alt={t(`e${i}`)}
+                            fill
+                            sizes="(min-width:768px) 256px, 90vw"
+                            className={`object-cover transition-transform duration-700 ${
+                              isOpen ? "scale-100" : "scale-105"
+                            }`}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </li>
             );
           })}
         </ol>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-5 rounded-3xl bg-night p-6 text-night-ink sm:p-8">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-5 rounded-3xl bg-maroon-soft p-6 ring-1 ring-maroon/15 sm:p-8">
           <div>
-            <h3 className="font-display text-2xl font-bold text-paper-on-night">{t("ctaH")}</h3>
-            <p className="mt-1 text-night-muted">{t("ctaP")}</p>
+            <h3 className="font-display text-2xl font-bold text-ink">{t("ctaH")}</h3>
+            <p className="mt-1 text-muted">{t("ctaP")}</p>
           </div>
-          <Link href="/register" className="btn btn-gold">{t("registerNow")}</Link>
+          <Link href="/register" className="btn btn-primary">{t("registerNow")}</Link>
         </div>
       </div>
     </section>

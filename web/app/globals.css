@@ -1,58 +1,55 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /*
-  Irtika'21 design tokens — taken from the logo: ink black, logo gold, paper white.
-  Layout: dark "night" hero and footer frame light content sections.
+  Irtika'21 design tokens: maroon, gold accent, paper white.
+  Light is the default. Dark appears only when the visitor picks it with the toggle.
 */
 :root {
-  --paper: #faf9f6;
-  --surface: #ffffff;
-  --sunk: #f1eee6;
-  --line: #e2ddcf;
-  --ink: #141413;
-  --muted: #5d5a52;
-  --gold: #cdae52;          /* logo gold — fills, accents */
-  --gold-ink: #8a6a12;      /* gold dark enough for text on light */
+  --paper: #fbf6f4;
+  --surface: #fffdfc;
+  --sunk: #f5ebe8;
+  --line: #ead9d5;
+  --ink: #2a1418;
+  --muted: #6b5358;
+  --maroon: #800020;
+  --maroon-ink: #800020;
+  --maroon-soft: #f7e9ec;
+  --gold: #cdae52;
+  --gold-ink: #8a6a12;
   --gold-soft: #f6eed6;
-  --night: #121211;         /* hero / footer */
-  --night-ink: #c9c4b6;
-  --night-muted: #9b968a;
-  --paper-on-night: #f3eedf;
+  --night: #f7e9ec;
+  --night-ink: #2a1418;
+  --night-muted: #6b5358;
+  --paper-on-night: #2a1418;
+  --footer-bg: #ffffff;
+  --footer-ink: #2a1418;
+  --footer-muted: #6b5358;
   --ok: #1f7a4a;
   --danger: #b3261e;
   --danger-soft: #fbe9e7;
 }
 
-/* Dark palette: follows the phone/computer setting unless the visitor picks a theme with the toggle */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0f0f0e;
-    --surface: #181816;
-    --sunk: #20201d;
-    --line: #34332e;
-    --ink: #f1ede2;
-    --muted: #a8a397;
-    --gold: #d6b65a;
-    --gold-ink: #e0c26c;
-    --gold-soft: #2b2617;
-    --night: #070707;
-    --ok: #4cc383;
-    --danger: #f2827a;
-    --danger-soft: #3a1714;
-    color-scheme: dark;
-  }
-}
+/* Dark palette: only when the visitor chooses dark with the toggle */
 :root[data-theme="dark"] {
-  --paper: #0f0f0e;
-  --surface: #181816;
-  --sunk: #20201d;
-  --line: #34332e;
-  --ink: #f1ede2;
-  --muted: #a8a397;
+  --paper: #120e0f;
+  --surface: #1c1617;
+  --sunk: #241c1e;
+  --line: #3a2e31;
+  --ink: #f3ecec;
+  --muted: #b5a7aa;
+  --maroon: #c9455e;
+  --maroon-ink: #e07a8c;
+  --maroon-soft: #3a1d24;
   --gold: #d6b65a;
   --gold-ink: #e0c26c;
   --gold-soft: #2b2617;
-  --night: #070707;
+  --night: #5a0016;
+  --night-ink: #f5e9eb;
+  --night-muted: #d8b5bd;
+  --paper-on-night: #fbf4f5;
+  --footer-bg: #070707;
+  --footer-ink: #f3ecec;
+  --footer-muted: #b5a7aa;
   --ok: #4cc383;
   --danger: #f2827a;
   --danger-soft: #3a1714;
@@ -66,6 +63,9 @@
   --color-line: var(--line);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
+  --color-maroon: var(--maroon);
+  --color-maroon-ink: var(--maroon-ink);
+  --color-maroon-soft: var(--maroon-soft);
   --color-gold: var(--gold);
   --color-gold-ink: var(--gold-ink);
   --color-gold-soft: var(--gold-soft);
@@ -73,6 +73,9 @@
   --color-night-ink: var(--night-ink);
   --color-night-muted: var(--night-muted);
   --color-paper-on-night: var(--paper-on-night);
+  --color-footer-bg: var(--footer-bg);
+  --color-footer-ink: var(--footer-ink);
+  --color-footer-muted: var(--footer-muted);
   --color-ok: var(--ok);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
@@ -85,6 +88,7 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: calc(80px + env(safe-area-inset-top));
 }
+
 body {
   background: var(--paper);
   color: var(--ink);
@@ -92,6 +96,7 @@ body {
   line-height: 1.65;
   -webkit-tap-highlight-color: transparent;
 }
+
 body::before {
   content: "";
   position: fixed;
@@ -100,36 +105,104 @@ body::before {
   background: var(--surface);
   z-index: 60;
 }
-h1, h2, h3 { text-wrap: balance; }
-:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
-/* Logo + theme-toggle icon per theme (.when-light / .when-dark) */
-.logo-dark, .when-dark { display: none; }
-:root[data-theme="dark"] .logo-light, :root[data-theme="dark"] .when-light { display: none; }
-:root[data-theme="dark"] .logo-dark, :root[data-theme="dark"] .when-dark { display: block; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .logo-light, :root:not([data-theme="light"]) .when-light { display: none; }
-  :root:not([data-theme="light"]) .logo-dark, :root:not([data-theme="light"]) .when-dark { display: block; }
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Logo + theme icon: light by default, dark only when data-theme="dark" */
+.logo-dark,
+.when-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .logo-light,
+:root[data-theme="dark"] .when-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .logo-dark,
+:root[data-theme="dark"] .when-dark {
+  display: block;
 }
 
 /* Registration step 1 motion */
-@keyframes rise { from { transform: translateY(10px); opacity: 0.4; } to { transform: none; opacity: 1; } }
-@keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
-@keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-.cat-card { animation: rise 0.4s ease-out both; }
-.check-pop { animation: pop 0.28s ease-out; }
-.amount-reveal { animation: reveal 0.25s ease-out; }
+@keyframes rise {
+  from {
+    transform: translateY(10px);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+
+  70% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cat-card {
+  animation: rise 0.4s ease-out both;
+}
+
+.check-pop {
+  animation: pop 0.28s ease-out;
+}
+
+.amount-reveal {
+  animation: reveal 0.25s ease-out;
+}
 
 @layer components {
   .gutter {
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
   }
+
   .btn {
     display: inline-flex;
     align-items: center;
@@ -144,16 +217,52 @@ h1, h2, h3 { text-wrap: balance; }
     cursor: pointer;
     transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
   }
-  .btn:active { transform: translateY(1px); }
-  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-  .btn-primary { background: var(--ink); color: var(--paper); }
-  .btn-primary:hover:not(:disabled) { background: color-mix(in oklab, var(--ink) 85%, var(--gold)); }
-  .btn-gold { background: var(--gold); color: #1a1405; }
-  .btn-gold:hover:not(:disabled) { background: color-mix(in oklab, var(--gold) 88%, white); }
-  .btn-ghost { border-color: var(--line); color: var(--ink); background: transparent; }
-  .btn-ghost:hover:not(:disabled) { background: var(--sunk); }
-  .btn-night { border-color: rgb(255 255 255 / 0.28); color: var(--paper-on-night); }
-  .btn-night:hover { background: rgb(255 255 255 / 0.08); }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--maroon);
+    color: #fff;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--maroon) 85%, black);
+  }
+
+  .btn-gold {
+    background: var(--gold);
+    color: #1a1405;
+  }
+
+  .btn-gold:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--gold) 88%, white);
+  }
+
+  .btn-ghost {
+    border-color: var(--line);
+    color: var(--ink);
+    background: transparent;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--sunk);
+  }
+
+  .btn-night {
+    border-color: var(--maroon);
+    color: var(--maroon);
+  }
+
+  .btn-night:hover {
+    background: var(--maroon-soft);
+  }
 
   .input {
     width: 100%;
@@ -163,27 +272,95 @@ h1, h2, h3 { text-wrap: balance; }
     border-radius: 12px;
     background: var(--paper);
     color: var(--ink);
-    font-size: 1rem; /* 16px stops iOS from zooming in */
+    font-size: 1rem;
   }
-  .input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px var(--gold-soft); }
-  .input[aria-invalid="true"] { border-color: var(--danger); }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--maroon);
+    box-shadow: 0 0 0 3px var(--maroon-soft);
+  }
+
+  .input[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
 
   .eyebrow {
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--gold-ink);
+    color: var(--maroon-ink);
   }
+
   .panel {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 18px;
     padding: 1.25rem;
   }
-  @media (min-width: 640px) { .panel { padding: 1.75rem; } }
 
-  /* Gold triangle motif from the "২১" in the logo */
+  @media (min-width: 640px) {
+    .panel {
+      padding: 1.75rem;
+    }
+  }
+
+  /* হেডার রেজিস্ট্রেশন বাটন: মেরুন, সোনালি রিং, হালকা ঝলক ও হোভার */
+  .btn-cta {
+    position: relative;
+    overflow: hidden;
+    background: var(--maroon);
+    color: #fff;
+    box-shadow: 0 6px 18px -8px rgba(128, 0, 32, 0.6);
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+
+  .btn-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px -10px rgba(128, 0, 32, 0.7);
+    background: color-mix(in oklab, var(--maroon) 88%, black);
+  }
+
+  .btn-cta::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-20deg);
+    animation: shine 3.2s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+
+    0%,
+    60% {
+      left: -75%;
+    }
+
+    100% {
+      left: 130%;
+    }
+  }
+
+  .btn-cta-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    background: var(--gold);
+    color: #1a1405;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* Gold triangle motif from the logo */
   .tri {
     clip-path: polygon(0 0, 100% 0, 50% 100%);
     background: var(--gold);

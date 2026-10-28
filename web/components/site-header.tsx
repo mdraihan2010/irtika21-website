@@ -11,8 +11,9 @@ import { ThemeToggle } from "./theme-toggle";
 const NAV: { href: string; k: TKey }[] = [
   { href: "/", k: "nHome" },
   { href: "/#about", k: "nAbout" },
-  { href: "/#events", k: "nEvents" },
+  { href: "/#gallery", k: "nGallery" },
   { href: "/#gifts", k: "nGifts" },
+  { href: "/#events", k: "nEvents" },
   { href: "/shop", k: "nShop" },
   { href: "#contact", k: "nContact" },
 ];
@@ -65,10 +66,12 @@ export function SiteHeader() {
           >
             {t("langSwitch")}
           </button>
-          <Link href="/register" className="btn btn-primary px-4">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+          <Link href="/register" className="btn btn-cta px-4 font-display">
+            <span aria-hidden className="btn-cta-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden>
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
             <span className="max-[420px]:sr-only">{t("register")}</span>
           </Link>
           <button

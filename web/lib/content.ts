@@ -1,4 +1,4 @@
-// All event facts live here. Change a value once and every page updates.
+﻿// All event facts live here. Change a value once and every page updates.
 
 export const EVENT = {
   /** Programme start: 23 Nov 2026, 4:15 PM Bangladesh time (after Asr) */
@@ -9,7 +9,7 @@ export const EVENT = {
   facebookUrl: "" as string,
 } as const;
 
-/** Personal number — participants use "Send Money" and pay the charge themselves */
+/** Personal number: participants use "Send Money" and pay the charge themselves */
 export const PAYMENT = {
   bkash: "01860307502",
   nagad: "01860307502",
@@ -29,7 +29,7 @@ export type GiftId =
 
 /** `image` is shown when available; otherwise a drawn icon is used */
 export const GIFTS: Record<GiftId, { image?: string }> = {
-  tshirt: {},
+    tshirt: { image: "/images/tshirt.jpg" },
   keyring: { image: "/images/gift-keyring.webp" },
   quran: { image: "/images/gift-quran.webp" },
   giftpack: { image: "/images/gift-giftpack.webp" },
@@ -48,26 +48,45 @@ export const GIFT_ORDER: GiftId[] = [
   "scarf",
 ];
 
-export type CategoryId = "fresher" | "general" | "gradM" | "gradF" | "other";
+/** ছেলে বা মেয়ে */
+export type Gender = "boy" | "girl";
+
+/** ৮টি ক্যাটাগরি: ছেলে ও মেয়ে আলাদা। দাম একই। ছেলে টি-শার্ট, মেয়ে স্কার্ফ। */
+export type CategoryId =
+  | "fresher_b"
+  | "general_b"
+  | "grad_b"
+  | "other_b"
+  | "fresher_g"
+  | "general_g"
+  | "grad_g"
+  | "other_g";
+
+export type CategoryKind = "fresher" | "general" | "grad" | "other";
 
 export type Category = {
   id: CategoryId;
+  gender: Gender;
+  kind: CategoryKind;
   fee: number;
   /** true when the participant may pay more than `fee` */
   minimumOnly?: boolean;
   gifts: GiftId[];
-  /** what the participant wears: a sized T-shirt or a scarf */
   wear: "tshirt" | "scarf";
-  /** student fields required? */
   studentInfo: boolean;
 };
 
 export const CATEGORIES: Category[] = [
-  { id: "fresher", fee: 249, gifts: ["tshirt", "keyring", "quran", "giftpack"], wear: "tshirt", studentInfo: true },
-  { id: "general", fee: 299, gifts: ["tshirt", "giftpack"], wear: "tshirt", studentInfo: true },
-  { id: "gradM", fee: 499, gifts: ["tshirt", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "tshirt", studentInfo: true },
-  { id: "gradF", fee: 499, gifts: ["scarf", "keyring", "quran", "giftpack"], wear: "scarf", studentInfo: true },
-  { id: "other", fee: 349, minimumOnly: true, gifts: ["tshirt"], wear: "tshirt", studentInfo: false },
+  // ছেলেদের বিভাগ
+  { id: "fresher_b", gender: "boy", kind: "fresher", fee: 299, gifts: ["tshirt", "keyring", "quran", "giftpack"], wear: "tshirt", studentInfo: true },
+  { id: "general_b", gender: "boy", kind: "general", fee: 299, gifts: ["tshirt", "giftpack"], wear: "tshirt", studentInfo: true },
+  { id: "grad_b", gender: "boy", kind: "grad", fee: 499, gifts: ["tshirt", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "tshirt", studentInfo: true },
+  { id: "other_b", gender: "boy", kind: "other", fee: 499, minimumOnly: true, gifts: ["tshirt"], wear: "tshirt", studentInfo: false },
+  // মেয়েদের বিভাগ
+  { id: "fresher_g", gender: "girl", kind: "fresher", fee: 299, gifts: ["scarf", "keyring", "quran", "giftpack"], wear: "scarf", studentInfo: true },
+  { id: "general_g", gender: "girl", kind: "general", fee: 299, gifts: ["scarf", "giftpack"], wear: "scarf", studentInfo: true },
+  { id: "grad_g", gender: "girl", kind: "grad", fee: 499, gifts: ["scarf", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "scarf", studentInfo: true },
+  { id: "other_g", gender: "girl", kind: "other", fee: 499, minimumOnly: true, gifts: ["scarf"], wear: "scarf", studentInfo: false },
 ];
 
 export const MAX_CUSTOM_AMOUNT = 100000;
@@ -86,7 +105,7 @@ export const MAX_QTY = 20;
 
 /**
  * T-shirt sizes in inches: [size, length, chest].
- * SAMPLE values — set SIZES_CONFIRMED to true after entering the final chart.
+ * SAMPLE values: set SIZES_CONFIRMED to true after entering the final chart.
  */
 export const SIZES: [string, number, number][] = [
   ["S", 26, 36],

@@ -1,4 +1,4 @@
-// Shared by the browser (instant feedback) and the API (final check).
+﻿// Shared by the browser (instant feedback) and the API (final check).
 // The server never trusts the browser: it runs these again and recalculates prices.
 
 import {
@@ -39,7 +39,9 @@ export type RegistrationDraft = {
   department: string;
   session: string;
   studentId: string;
+  designation: string;
   email: string;
+  whatsapp: string;
   size: string;
   method: PayMethod;
   sender: string;
@@ -70,8 +72,11 @@ export function validateRegStep(step: number, d: RegistrationDraft): Errors {
       if (!d.department.trim()) e.department = "e_required";
       if (!d.session.trim()) e.session = "e_required";
       if (!d.studentId.trim()) e.studentId = "e_required";
+    } else if (d.designation.trim().length < 2) {
+      e.designation = "e_designation";
     }
     if (!isGmail(d.email.trim())) e.email = "e_email";
+    if (!normalizeBdPhone(d.whatsapp)) e.whatsapp = "e_whatsapp";
   }
   if (step >= 3 && c && c.wear === "tshirt" && !SIZE_IDS.includes(d.size)) e.size = "e_size";
   if (step >= 4) {
@@ -93,7 +98,9 @@ export function parseRegistration(body: unknown) {
     department: str(b.department, 60),
     session: str(b.session, 20),
     studentId: str(b.studentId, 30),
+    designation: str(b.designation, 80),
     email: str(b.email, 120).toLowerCase(),
+    whatsapp: str(b.whatsapp, 20),
     size: str(b.size, 5),
     method,
     sender: str(b.sender, 20),
@@ -108,12 +115,16 @@ export function parseRegistration(body: unknown) {
     record: {
       ref: draft.ref,
       category: c.id,
+      gender: c.gender,
+      kind: c.kind,
       amount: feeFor(c.id, draft.amount),
       name: draft.name,
-      department: c.studentInfo || draft.department ? draft.department : null,
-      session: c.studentInfo || draft.session ? draft.session : null,
-      student_id: c.studentInfo || draft.studentId ? draft.studentId : null,
+      department: c.studentInfo ? draft.department : null,
+      session: c.studentInfo ? draft.session : null,
+      student_id: c.studentInfo ? draft.studentId : null,
+      designation: c.studentInfo ? null : draft.designation,
       email: draft.email,
+      whatsapp: normalizeBdPhone(draft.whatsapp),
       gift_wear: c.wear,
       tshirt_size: c.wear === "tshirt" ? draft.size : null,
       pay_method: draft.method,
