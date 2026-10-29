@@ -1,4 +1,5 @@
-import { insertRow } from "./db";
+﻿import { insertRow } from "./db";
+import { sendRegistrationEmail } from "@/lib/email";
 
 type Parsed =
   | { ok: false; errors: Record<string, string | undefined> }
@@ -29,14 +30,24 @@ export async function handleSubmission(
 
   const result = await insertRow(table, parsed.record);
   switch (result.status) {
-    case "created":
-    case "duplicate_ref": // same submission sent twice (double tap / retry) — treat as success
+    case "created": {
+      // নতুন রেজিস্ট্রেশন সফল: শুধু রেজিস্ট্রেশনে কনফার্মেশন ইমেইল যাবে
+      if (table === "registrations") {
+        const r = parsed.record as { email?: string; name?: string };
+        if (r.email && r.name) {
+          const mail = await sendRegistrationEmail(r.email, r.name);
+          if (!mail.ok) console.warn(`[${table}] email not sent:`, mail.reason);
+        }
+      }
+      return Response.json({ ok: true, ref: parsed.record.ref });
+    }
+    case "duplicate_ref": // same submission sent twice (double tap / retry), treat as success
       return Response.json({ ok: true, ref: parsed.record.ref });
     case "duplicate_trx":
       return Response.json({ ok: false, error: "trx_used" }, { status: 409 });
     case "not_configured":
       if (process.env.NODE_ENV !== "production") {
-        console.warn(`[${table}] Supabase not configured — submission NOT saved:`, parsed.record);
+        console.warn(`[${table}] Supabase not configured, submission NOT saved:`, parsed.record);
         return Response.json({ ok: true, ref: parsed.record.ref, demo: true });
       }
       console.error(`[${table}] Supabase environment variables are missing`);

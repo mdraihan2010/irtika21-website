@@ -1,5 +1,17 @@
 ﻿@import "tailwindcss";
 
+@font-face {
+  font-family: "Kalpurush";
+  src: url("/kalpurush.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SolaimanLipi";
+  src: url("/fonts/SolaimanLipi.ttf") format("truetype");
+  font-display: swap;
+}
+
 /*
   Irtika'21 design tokens: maroon, gold accent, paper white.
   Light is the default. Dark appears only when the visitor picks it with the toggle.
@@ -185,6 +197,18 @@ h3 {
   }
 }
 
+/* Header CTA shine: kept outside @layer so it is a plain keyframes rule */
+@keyframes shine {
+  0%,
+  60% {
+    left: -75%;
+  }
+
+  100% {
+    left: 130%;
+  }
+}
+
 .cat-card {
   animation: rise 0.4s ease-out both;
 }
@@ -336,17 +360,13 @@ h3 {
     animation: shine 3.2s ease-in-out infinite;
   }
 
-  @keyframes shine {
-
-    0%,
-    60% {
-      left: -75%;
-    }
-
-    100% {
-      left: 130%;
-    }
-  }
+        .bn-num-kalpurush {
+          font-family: "Kalpurush", var(--font-sans);
+        }
+    
+        .bn-num-solaiman {
+          font-family: "SolaimanLipi", var(--font-sans);
+        }
 
   .btn-cta-icon {
     display: inline-grid;

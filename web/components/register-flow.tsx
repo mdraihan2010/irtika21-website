@@ -53,17 +53,27 @@ export function RegisterFlow() {
 
   const cat = getCategory(s.category);
   const total = feeFor(s.category, s.amount);
+
+  // ছেলেদের: ক্যাটাগরি, তথ্য, টি-শার্ট, পেমেন্ট (৪ ধাপ)
+  // মেয়েদের: ক্যাটাগরি, তথ্য, পেমেন্ট (৩ ধাপ), কারণ স্কার্ফের সাইজ লাগে না
+  const isScarf = cat?.wear === "scarf";
+  const paymentStep = isScarf ? 3 : 4;
+
   const patch = (p: Partial<State>) => {
     setState((prev) => ({ ...prev, ...p }));
-    // clear the error of any field being edited
     setErrors((e) => {
       const next = { ...e };
       for (const k of Object.keys(p)) delete next[k];
       return next;
     });
   };
+
   const goTo = (step: number) => {
-    setState((prev) => ({ ...prev, step, ref: prev.ref || (step === 4 ? makeRef("R") : "") }));
+    setState((prev) => ({
+      ...prev,
+      step,
+      ref: prev.ref || (step === paymentStep ? makeRef("R") : ""),
+    }));
     setRestored(false);
     setBanner(null);
     window.scrollTo({ top: 0 });
@@ -78,7 +88,7 @@ export function RegisterFlow() {
 
   const submit = async () => {
     if (busy) return;
-    const e = validateRegStep(4, s);
+    const e = validateRegStep(paymentStep, s);
     setErrors(e);
     if (Object.keys(e).length) return focusFirstError();
     setBusy(true);
@@ -87,7 +97,7 @@ export function RegisterFlow() {
     const result = await postJson("/api/registrations", { ...s, ref });
     setBusy(false);
     if (result.kind === "ok") {
-      // keep only the reference — personal details leave this device
+      // keep only the reference: personal details leave this device
       setState({ ...initial(), ref, done: true, demo: !!result.demo });
       window.scrollTo({ top: 0 });
     } else {
@@ -104,7 +114,9 @@ export function RegisterFlow() {
     window.scrollTo({ top: 0 });
   };
 
-  const stepLabels = [t("st1"), t("st2"), cat?.wear === "scarf" ? t("st3s") : t("st3"), t("st4")];
+  const stepLabels = isScarf
+    ? [t("st1"), t("st2"), t("st4")]
+    : [t("st1"), t("st2"), t("st3"), t("st4")];
 
   return (
     <div className="gutter mx-auto max-w-5xl py-8 sm:py-12">
@@ -133,7 +145,7 @@ export function RegisterFlow() {
             noValidate
             onSubmit={(e) => {
               e.preventDefault();
-              if (s.step < 4) next();
+              if (s.step < paymentStep) next();
               else submit();
             }}
           >
@@ -153,6 +165,7 @@ export function RegisterFlow() {
                       amount: c.minimumOnly ? s.amount || String(c.fee) : "",
                       size: c.wear === "scarf" ? "" : s.size,
                     });
+                    goTo(2);
                   }}
                   onAmount={(amount) => patch({ amount })}
                 />
@@ -176,7 +189,7 @@ export function RegisterFlow() {
                 ) : (
                   <Field id="designation" label={t("fDesig")} value={s.designation} onChange={(v) => patch({ designation: v })} error={errors.designation} placeholder={t("phDesig")} className="sm:col-span-2" maxLength={80} />
                 )}
-                <Field id="email" label={t("fEmail")} value={s.email} onChange={(v) => patch({ email: v.trim() })} error={errors.email} hint={t("emailHint")} type="email" inputMode="email" autoComplete="email" placeholder="name@gmail.com" maxLength={120} />
+                <Field id="email" label={t("fEmail")} value={s.email} onChange={(v) => patch({ email: v.trim() })} error={errors.email} hint={t("emailHint")} type="email" inputMode="email" autoComplete="email" placeholder="name@example.com" maxLength={120} />
                 <Field
                   id="whatsapp"
                   label={t("fWhatsapp")}
@@ -193,27 +206,22 @@ export function RegisterFlow() {
               </div>
             )}
 
-            {s.step === 3 && cat && (
-              cat.wear === "scarf" ? (
-                <div className="flex flex-wrap items-center gap-5">
-                  <span className="grid h-28 w-28 place-items-center rounded-2xl bg-gold-soft text-gold-ink">
-                    <GiftIcon id="scarf" className="h-14 w-14" />
-                  </span>
-                  <div className="min-w-0 flex-1 basis-60">
-                    <h2 className="font-display text-xl font-semibold">{t("scarfH")}</h2>
-                    <p className="mt-1 text-muted">{t("scarfP")}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <h2 className="font-display text-xl font-semibold">{t("sizeH")}</h2>
-                  <p className="text-muted">{t("sizeP")}</p>
-                  <SizePicker value={s.size} onChange={(v) => patch({ size: v })} error={errors.size} />
-                </div>
-              )
+            {s.step === 3 && cat && !isScarf && (
+              <div className="flex flex-col gap-3">
+                <h2 className="font-display text-xl font-semibold">{t("sizeH")}</h2>
+                <p className="text-muted">{t("sizeP")}</p>
+                <SizePicker
+                  value={s.size}
+                  error={errors.size}
+                  onChange={(v) => {
+                    patch({ size: v });
+                    goTo(4);
+                  }}
+                />
+              </div>
             )}
 
-            {s.step === 4 && cat && (
+            {s.step === paymentStep && cat && (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
                 <div className="lg:sticky lg:top-24 lg:self-start">
                   <Summary
@@ -259,9 +267,17 @@ export function RegisterFlow() {
                   ← {t("back")}
                 </button>
               ) : null}
-              <button type="submit" className="btn btn-primary min-w-40" disabled={busy || (s.step === 1 && !cat)}>
-                {s.step < 4 ? `${t("next")} →` : busy ? t("submitting") : t("submit")}
-              </button>
+
+              {s.step === 2 && (
+                <button type="submit" className="btn btn-primary min-w-40" disabled={busy}>
+                  {`${t("next")} →`}
+                </button>
+              )}
+              {s.step === paymentStep && (
+                <button type="submit" className="btn btn-primary min-w-40" disabled={busy}>
+                  {busy ? t("submitting") : t("submit")}
+                </button>
+              )}
             </div>
           </form>
 

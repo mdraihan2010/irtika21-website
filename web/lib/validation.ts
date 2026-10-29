@@ -27,7 +27,7 @@ export function normalizeBdPhone(raw: string) {
 
 export const normalizeTrx = (raw: string) => raw.replace(/\s/g, "").toUpperCase();
 export const isValidTrx = (trx: string) => /^[A-Z0-9]{8,12}$/.test(trx);
-export const isGmail = (email: string) => /^[a-z0-9._%+-]+@gmail\.com$/i.test(email);
+export const isGmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
 /* ---------------- Registration ---------------- */
 

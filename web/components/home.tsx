@@ -129,7 +129,11 @@ function Hero() {
             style={{ transitionDelay: "150ms" }}
           >
             <p className="eyebrow">{t("org")}</p>
-            <p className="mt-3 max-w-[54ch] text-lg text-ink/90">{t("heroLead")}</p>
+           <div className="font-display mt-3 max-w-[54ch] text-xl font-bold leading-snug text-ink sm:text-2xl">
+  {t("heroLead").split("|").map((line, i) => (
+    <span key={i} className="block">{line}</span>
+  ))}
+</div>
           </div>
 
           <dl className="grid gap-2 rounded-2xl border border-line bg-paper p-4">
@@ -193,74 +197,132 @@ function SectionHead({ eyebrow, title, lead }: { eyebrow: string; title: string;
   );
 }
 
+/** লেখার ভেতরে {{...}} থাকলে সেই অংশ আলাদা ফন্টে (Kalpurush) দেখাবে */
+function Accented({ text }: { text: string }) {
+  const parts = text.split(/\{\{(.+?)\}\}/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <span key={i} className="bn-num-kalpurush">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 function About() {
   const { t } = useLang();
-  const facts = [
-    ["f1h", "f1p"],
-    ["f2h", "f2p"],
-    ["f3h", "f3p"],
-  ] as const;
   return (
-    <section id="about" className="gutter mx-auto max-w-6xl py-16">
-      <div className="grid gap-10 md:grid-cols-[1.2fr_1fr]">
-        <div>
-          <SectionHead eyebrow={t("nAbout")} title={t("aboutH")} />
-          <div className="flex max-w-[62ch] flex-col gap-4 text-[1.05rem]">
-            <p>{t("aboutP1")}</p>
-            <p>{t("aboutP2")}</p>
-          </div>
-        </div>
-        <ul className="flex flex-col gap-3 self-end">
-          {facts.map(([h, p]) => (
-            <li key={h} className="flex gap-4 rounded-2xl bg-sunk p-4">
-              <span aria-hidden className="tri mt-1.5 h-3 w-4 shrink-0" />
-              <span>
-                <b className="block font-semibold">{t(h)}</b>
-                <span className="text-sm text-muted">{t(p)}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+    <section id="about" className="gutter mx-auto max-w-4xl py-16">
+      <div className="mb-8 flex max-w-[62ch] flex-col gap-2">
+        <p className="eyebrow">{t("nAbout")}</p>
+        <h2 className="font-display text-[clamp(1.7rem,4vw,2.4rem)] font-bold leading-tight">
+          ইর্তিকা’<span className="bn-num-kalpurush">২১</span> কী?
+        </h2>
+      </div>
+
+      <div className="font-sans flex flex-col gap-5 text-lg leading-loose text-ink sm:text-xl">
+        <p className="font-display text-2xl font-bold text-maroon-ink">{t("aboutIntro")}</p>
+        <p>{t("aboutP1")}</p>
+        <p>{t("aboutP2")}</p>
+        <p><Accented text={t("aboutP3")} /></p>
+        <p className="font-display border-l-4 border-maroon pl-4 text-xl font-semibold text-maroon-ink">
+          {t("aboutP4")}
+        </p>
       </div>
     </section>
   );
 }
-
 function Gallery() {
   const { t } = useLang();
   const [open, setOpen] = useState<number | null>(null);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const items = GALLERY.map((g) => ({ src: g.src, caption: t(g.key) }));
+  const count = GALLERY.length;
+
+  // প্রতি ২.৫ সেকেন্ডে এক ধাপ বামে (anticlockwise) সরবে
+  useEffect(() => {
+    if (paused || count < 2) return;
+    const id = setInterval(() => setActive((a) => (a + 1) % count), 1500);
+    return () => clearInterval(id);
+  }, [paused, count]);
+
+  const pos = (i: number) => {
+    // প্রতিটি ছবির অবস্থান: 0 = মাঝে, -1 = বাম, 1 = ডান
+    const diff = (i - active + count) % count;
+    if (diff === 0) return "center";
+    if (diff === 1) return "right";
+    if (diff === count - 1) return "left";
+    return "hidden";
+  };
+
   return (
     <section id="gallery" className="border-y border-line bg-surface">
       <div className="gutter mx-auto max-w-6xl py-16">
         <SectionHead eyebrow={t("galE")} title={t("galH")} />
-        <ul className="grid auto-rows-[160px] grid-cols-2 gap-3 md:auto-rows-[200px] md:grid-cols-4">
-          {GALLERY.map((g, i) => (
-            <li key={g.src} className={i === 0 ? "col-span-2 row-span-2" : ""}>
+
+        <div
+          className="relative mx-auto flex h-[260px] w-full items-center justify-center overflow-hidden sm:h-[360px]"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          {GALLERY.map((g, i) => {
+            const p = pos(i);
+            const base =
+              "absolute overflow-hidden rounded-2xl bg-sunk transition-all duration-400 ease-in-out";
+            const cls =
+              p === "center"
+                ? "z-20 left-1/2 top-0 h-full w-[62%] -translate-x-1/2 shadow-xl"
+                : p === "left"
+                ? "z-10 left-0 top-1/2 h-[64%] w-[22%] -translate-y-1/2 opacity-80"
+                : p === "right"
+                ? "z-10 right-0 top-1/2 h-[64%] w-[22%] -translate-y-1/2 opacity-80"
+                : "pointer-events-none opacity-0";
+            return (
               <button
+                key={g.src}
                 type="button"
                 onClick={() => setOpen(i)}
                 aria-label={`${t(g.key)} — ${t("photoOpen")}`}
-                className="group relative block h-full w-full cursor-zoom-in overflow-hidden rounded-2xl bg-sunk text-left"
+                className={`${base} ${cls} cursor-zoom-in text-left`}
+                tabIndex={p === "center" ? 0 : -1}
               >
                 <Image
                   src={g.src}
                   alt={t(g.key)}
                   fill
-                  sizes={i === 0 ? "(min-width:768px) 560px, 100vw" : "(min-width:768px) 280px, 50vw"}
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  sizes="(min-width:768px) 560px, 80vw"
+                  className="object-cover"
                   style={g.position ? { objectPosition: g.position } : undefined}
                 />
-                <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent px-3 pb-2.5 pt-8 text-sm font-medium text-white">
-                  {t(g.key)}
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="shrink-0 opacity-80" aria-hidden>
-                    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                  </svg>
-                </span>
+                {p === "center" && (
+                  <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/75 to-transparent px-4 pb-3 pt-10 text-base font-medium text-white">
+                    {t(g.key)}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="shrink-0 opacity-80" aria-hidden>
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                    </svg>
+                  </span>
+                )}
               </button>
-            </li>
+            );
+          })}
+        </div>
+
+        {/* নিচে ছোট সূচক বিন্দু */}
+        <div className="mt-5 flex justify-center gap-2" aria-hidden>
+          {GALLERY.map((_, i) => (
+            <span
+              key={i}
+              className={`h-2 rounded-full transition-all duration-500 ${
+                i === active ? "w-6 bg-maroon" : "w-2 bg-line"
+              }`}
+            />
           ))}
-        </ul>
+        </div>
       </div>
       <Lightbox items={items} index={open} onChange={setOpen} />
     </section>
@@ -355,7 +417,7 @@ function Events() {
                 >
                   <div className="overflow-hidden">
                     <div className="flex flex-col gap-4 pb-6 pl-[48px] sm:pl-[72px] md:flex-row md:items-start md:justify-between md:gap-8">
-                      <p className="max-w-[62ch] text-muted">{t(`e${i}p`)}</p>
+                      <p className="max-w-[62ch] text-muted"><Accented text={t(`e${i}p`)} /></p>
                       {img && (
                         <div className="relative aspect-[3/2] w-full shrink-0 overflow-hidden rounded-xl md:w-64">
                           <Image

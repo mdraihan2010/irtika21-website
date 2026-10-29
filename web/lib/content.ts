@@ -35,7 +35,7 @@ export const GIFTS: Record<GiftId, { image?: string }> = {
   giftpack: { image: "/images/gift-giftpack.webp" },
   crest: { image: "/images/gift-crest.webp" },
   uttoriyo: { image: "/images/gift-uttoriyo.webp" },
-  scarf: {},
+    scarf: { image: "/images/Scarf.png" },
 };
 
 export const GIFT_ORDER: GiftId[] = [
@@ -81,12 +81,12 @@ export const CATEGORIES: Category[] = [
   { id: "fresher_b", gender: "boy", kind: "fresher", fee: 299, gifts: ["tshirt", "keyring", "quran", "giftpack"], wear: "tshirt", studentInfo: true },
   { id: "general_b", gender: "boy", kind: "general", fee: 299, gifts: ["tshirt", "giftpack"], wear: "tshirt", studentInfo: true },
   { id: "grad_b", gender: "boy", kind: "grad", fee: 499, gifts: ["tshirt", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "tshirt", studentInfo: true },
-  { id: "other_b", gender: "boy", kind: "other", fee: 499, minimumOnly: true, gifts: ["tshirt"], wear: "tshirt", studentInfo: false },
+  { id: "other_b", gender: "boy", kind: "other", fee: 499, minimumOnly: true, gifts: ["tshirt", "keyring", "giftpack"], wear: "tshirt", studentInfo: false },
   // মেয়েদের বিভাগ
   { id: "fresher_g", gender: "girl", kind: "fresher", fee: 299, gifts: ["scarf", "keyring", "quran", "giftpack"], wear: "scarf", studentInfo: true },
   { id: "general_g", gender: "girl", kind: "general", fee: 299, gifts: ["scarf", "giftpack"], wear: "scarf", studentInfo: true },
   { id: "grad_g", gender: "girl", kind: "grad", fee: 499, gifts: ["scarf", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "scarf", studentInfo: true },
-  { id: "other_g", gender: "girl", kind: "other", fee: 499, minimumOnly: true, gifts: ["scarf"], wear: "scarf", studentInfo: false },
+  { id: "other_g", gender: "girl", kind: "other", fee: 499, minimumOnly: true, gifts: ["scarf", "keyring", "giftpack"], wear: "scarf", studentInfo: false },
 ];
 
 export const MAX_CUSTOM_AMOUNT = 100000;
@@ -99,7 +99,7 @@ export const PRODUCTS: { id: ProductId; price: number }[] = [
   { id: "tshirt", price: 249 },
   { id: "keyring", price: 35 },
   { id: "uttoriyo", price: 100 },
-  { id: "scarf", price: 499 },
+  { id: "scarf", price: 599 },
 ];
 export const MAX_QTY = 20;
 
@@ -117,10 +117,12 @@ export const SIZES: [string, number, number][] = [
 export const SIZES_CONFIRMED = false;
 export const SIZE_IDS = SIZES.map((s) => s[0]);
 
-export const SEGMENTS = [1, 2, 3, 4, 5] as const;
+export const SEGMENTS = [1, 2, 3, 4, 5, 6] as const;
 /** Optional photo per segment (index = segment number) */
 export const SEGMENT_IMAGES: Partial<Record<(typeof SEGMENTS)[number], string>> = {
   3: "/images/speaker.webp",
+  4: "/images/sirah-360.jpg",
+  6: "/images/azadi_monch.jpg",
 };
 
 export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "gal5"; position?: string }[] = [
@@ -128,5 +130,4 @@ export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "g
   { src: "/images/gallery-banner.webp", key: "gal2", position: "50% 22%" },
   { src: "/images/gallery-campus-team.webp", key: "gal3" },
   { src: "/images/gallery-office-team.webp", key: "gal4" },
-  { src: "/images/speaker.webp", key: "gal5" },
 ];

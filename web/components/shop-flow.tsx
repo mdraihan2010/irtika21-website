@@ -223,7 +223,7 @@ export function ShopFlow() {
                       </div>
                       <div className="flex flex-wrap items-baseline justify-between gap-x-2 px-1">
                         <span className="font-semibold">{t(`g_${p.id}`)}</span>
-                        <span className="font-mono tabular-nums text-gold-ink">{money(p.price)}</span>
+                        <span className="bn-num-kalpurush text-lg font-semibold text-ink">{money(p.price)}</span>
                       </div>
 
                       <div className="mt-auto flex flex-col gap-2">

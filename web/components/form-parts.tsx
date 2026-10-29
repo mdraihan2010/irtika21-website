@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { PAYMENT, PAY_METHODS, SIZES, SIZES_CONFIRMED, type PayMethod } from "@/lib/content";
+import { PAYMENT, PAY_METHODS, SIZES, type PayMethod } from "@/lib/content";
 import type { TKey } from "@/lib/i18n";
 import type { Errors } from "@/lib/validation";
 import { normalizeTrx } from "@/lib/validation";
@@ -113,7 +113,6 @@ export function SizePicker({ value, onChange, error, showTable = true }: { value
           </table>
         </div>
       )}
-      {showTable && !SIZES_CONFIRMED && <p className="text-sm text-gold-ink">{t("sizeNote")}</p>}
     </div>
   );
 }
@@ -280,12 +279,19 @@ export function DoneCard({ refCode, message, againLabel, onAgain, demo }: { refC
 export function FormFooterNote({ onClear }: { onClear: () => void }) {
   const { t } = useLang();
   return (
-    <p className="mt-5 text-sm text-muted">
-      {t("autosaved")}{" "}
-      <button type="button" onClick={onClear} className="underline underline-offset-4 hover:text-ink">
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+      <span>{t("autosaved")}</span>
+      <button
+        type="button"
+        onClick={onClear}
+        className="inline-flex min-h-9 items-center gap-2 rounded-full border border-danger/40 bg-danger px-4 font-semibold text-white transition-colors hover:opacity-90"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
+        </svg>
         {t("clearMine")}
       </button>
-    </p>
+    </div>
   );
 }
 
