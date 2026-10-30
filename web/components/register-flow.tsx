@@ -1,7 +1,8 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { useState } from "react";
-import { getCategory } from "@/lib/content";
+import { GIFTS, getCategory } from "@/lib/content";
 import { feeFor, makeRef, validateRegStep, type Errors, type RegistrationDraft } from "@/lib/validation";
 import {
   DoneCard,
@@ -206,20 +207,36 @@ export function RegisterFlow() {
               </div>
             )}
 
-            {s.step === 3 && cat && !isScarf && (
-              <div className="flex flex-col gap-3">
-                <h2 className="font-display text-xl font-semibold">{t("sizeH")}</h2>
-                <p className="text-muted">{t("sizeP")}</p>
-                <SizePicker
-                  value={s.size}
-                  error={errors.size}
-                  onChange={(v) => {
-                    patch({ size: v });
-                    goTo(4);
-                  }}
-                />
-              </div>
-            )}
+{s.step === 3 && cat && !isScarf && (
+  <div className="grid items-start gap-6 md:grid-cols-2">
+    {/* বাম দিক: সাইজ বাছাই ও সাইজ চার্ট */}
+    <div className="order-2 flex flex-col gap-3 md:order-1">
+      <h2 className="font-display text-xl font-semibold">{t("sizeH")}</h2>
+      <p className="text-muted">{t("sizeP")}</p>
+      <SizePicker
+        value={s.size}
+        error={errors.size}
+        onChange={(v) => {
+          patch({ size: v });
+          goTo(4);
+        }}
+      />
+    </div>
+
+    {/* ডান দিক: টি-শার্টের ছবি */}
+    <div className="order-1 md:order-2 md:sticky md:top-24">
+      <div className="relative mx-auto aspect-square w-full max-w-[280px] overflow-hidden rounded-2xl bg-white ring-1 ring-line md:max-w-none">
+        <Image
+          src={GIFTS.tshirt.image ?? "/images/gift-tshirt.png"}
+          alt={t("g_tshirt")}
+          fill
+          sizes="(min-width:768px) 400px, 280px"
+          className="object-contain"
+        />
+      </div>
+    </div>
+  </div>
+)}
 
             {s.step === paymentStep && cat && (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
@@ -268,7 +285,7 @@ export function RegisterFlow() {
                 </button>
               ) : null}
 
-              {s.step === 2 && (
+              {s.step < paymentStep && (
                 <button type="submit" className="btn btn-primary min-w-40" disabled={busy}>
                   {`${t("next")} →`}
                 </button>

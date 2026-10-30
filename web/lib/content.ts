@@ -29,13 +29,13 @@ export type GiftId =
 
 /** `image` is shown when available; otherwise a drawn icon is used */
 export const GIFTS: Record<GiftId, { image?: string }> = {
-    tshirt: { image: "/images/tshirt.jpg" },
-  keyring: { image: "/images/gift-keyring.webp" },
-  quran: { image: "/images/gift-quran.webp" },
-  giftpack: { image: "/images/gift-giftpack.webp" },
-  crest: { image: "/images/gift-crest.webp" },
-  uttoriyo: { image: "/images/gift-uttoriyo.webp" },
-    scarf: { image: "/images/Scarf.png" },
+  tshirt: { image: "/images/gift-tshirt.png" },
+  keyring: { image: "/images/gift-keyring.png" },
+  quran: { image: "/images/gift-quran.png" },
+  giftpack: { image: "/images/gift-giftpack.png" },
+  crest: { image: "/images/gift-crest.png" },
+  uttoriyo: { image: "/images/gift-uttoriyo.png" },
+  scarf: { image: "/images/gift-scarf.png" },
 };
 
 export const GIFT_ORDER: GiftId[] = [
@@ -79,12 +79,12 @@ export type Category = {
 export const CATEGORIES: Category[] = [
   // ছেলেদের বিভাগ
   { id: "fresher_b", gender: "boy", kind: "fresher", fee: 299, gifts: ["tshirt", "keyring", "quran", "giftpack"], wear: "tshirt", studentInfo: true },
-  { id: "general_b", gender: "boy", kind: "general", fee: 299, gifts: ["tshirt", "giftpack"], wear: "tshirt", studentInfo: true },
+  { id: "general_b", gender: "boy", kind: "general", fee: 299, gifts: ["tshirt", "keyring", "giftpack"], wear: "tshirt", studentInfo: true },
   { id: "grad_b", gender: "boy", kind: "grad", fee: 499, gifts: ["tshirt", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "tshirt", studentInfo: true },
   { id: "other_b", gender: "boy", kind: "other", fee: 499, minimumOnly: true, gifts: ["tshirt", "keyring", "giftpack"], wear: "tshirt", studentInfo: false },
   // মেয়েদের বিভাগ
   { id: "fresher_g", gender: "girl", kind: "fresher", fee: 299, gifts: ["scarf", "keyring", "quran", "giftpack"], wear: "scarf", studentInfo: true },
-  { id: "general_g", gender: "girl", kind: "general", fee: 299, gifts: ["scarf", "giftpack"], wear: "scarf", studentInfo: true },
+  { id: "general_g", gender: "girl", kind: "general", fee: 299, gifts: ["scarf", "keyring", "giftpack"], wear: "scarf", studentInfo: true },
   { id: "grad_g", gender: "girl", kind: "grad", fee: 499, gifts: ["scarf", "keyring", "quran", "giftpack", "crest", "uttoriyo"], wear: "scarf", studentInfo: true },
   { id: "other_g", gender: "girl", kind: "other", fee: 499, minimumOnly: true, gifts: ["scarf", "keyring", "giftpack"], wear: "scarf", studentInfo: false },
 ];
@@ -96,25 +96,26 @@ export const getCategory = (id: string | null | undefined) =>
 
 export type ProductId = "tshirt" | "keyring" | "uttoriyo" | "scarf";
 export const PRODUCTS: { id: ProductId; price: number }[] = [
-  { id: "tshirt", price: 249 },
+  { id: "tshirt", price: 279 },
   { id: "keyring", price: 35 },
   { id: "uttoriyo", price: 100 },
-  { id: "scarf", price: 599 },
+  { id: "scarf", price: 279 },
 ];
 export const MAX_QTY = 20;
 
 /**
  * T-shirt sizes in inches: [size, length, chest].
- * SAMPLE values: set SIZES_CONFIRMED to true after entering the final chart.
+ * Final chart (Standard Fit). SIZES_CONFIRMED is true because the chart is final.
  */
 export const SIZES: [string, number, number][] = [
-  ["S", 26, 36],
-  ["M", 27, 38],
-  ["L", 28, 40],
-  ["XL", 29, 42],
-  ["XXL", 30, 44],
+  ["S", 25, 36],
+  ["M", 26, 38],
+  ["L", 27, 40],
+  ["XL", 28, 42],
+  ["XXL", 29, 44],
+  ["XXXL", 30, 46],
 ];
-export const SIZES_CONFIRMED = false;
+export const SIZES_CONFIRMED = true;
 export const SIZE_IDS = SIZES.map((s) => s[0]);
 
 export const SEGMENTS = [1, 2, 3, 4, 5, 6] as const;
@@ -122,12 +123,14 @@ export const SEGMENTS = [1, 2, 3, 4, 5, 6] as const;
 export const SEGMENT_IMAGES: Partial<Record<(typeof SEGMENTS)[number], string>> = {
   3: "/images/speaker.webp",
   4: "/images/sirah-360.jpg",
-  6: "/images/azadi_monch.jpg",
+  6: "/images/azadi-manch.png",
 };
 
-export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "gal5"; position?: string }[] = [
+export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "gal5" | "gal6" | "gal7"; position?: string }[] = [
   { src: "/images/gallery-banner-handover.webp", key: "gal1" },
   { src: "/images/gallery-banner.webp", key: "gal2", position: "50% 22%" },
   { src: "/images/gallery-campus-team.webp", key: "gal3" },
   { src: "/images/gallery-office-team.webp", key: "gal4" },
+  { src: "/images/speaker.webp", key: "gal6" },
+  { src: "/images/azadi-manch.png", key: "gal7" },
 ];

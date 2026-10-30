@@ -51,7 +51,7 @@ export function GiftVisual({ id, sizes, priority }: { id: GiftId; sizes: string;
   const { t } = useLang();
   const img = GIFTS[id].image;
   return (
-    <span className="relative block aspect-square w-full overflow-hidden rounded-lg bg-gold-soft">
+    <span className="relative block aspect-square w-full overflow-hidden rounded-lg bg-white ring-1 ring-line">
       {img ? (
         <Image src={img} alt={t(`g_${id}`)} fill sizes={sizes} priority={priority} className="object-contain" />
       ) : (

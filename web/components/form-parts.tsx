@@ -1,12 +1,29 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { PAYMENT, PAY_METHODS, SIZES, type PayMethod } from "@/lib/content";
 import type { TKey } from "@/lib/i18n";
 import type { Errors } from "@/lib/validation";
 import { normalizeTrx } from "@/lib/validation";
 import { useLang } from "./lang";
 import { useCopy } from "./ui";
+
+/** লেখার ভেতরে {{...}} থাকলে সেই অংশ আলাদা ফন্টে (Kalpurush) দেখাবে */
+export function Accented({ text }: { text: string }) {
+  const parts = text.split(/\{\{(.+?)\}\}/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <span key={i} className="bn-num-kalpurush">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 export function StepBar({ labels, current }: { labels: string[]; current: number }) {
   const { t, n } = useLang();
@@ -237,7 +254,7 @@ export function Summary({ rows, total, refCode }: { rows: [string, string][]; to
       {rows.map(([k, v]) => (
         <div key={k} className="flex justify-between gap-4 text-sm">
           <span className="text-muted">{k}</span>
-          <span className="min-w-0 break-words text-right">{v}</span>
+          <span className={`min-w-0 break-words text-right ${k === "স্টুডেন্ট আইডি" || k === "Student ID" ? "bn-num-kalpurush" : ""}`}>{v}</span>
         </div>
       ))}
       <div className="flex justify-between gap-4 border-t border-line pt-3 text-lg font-bold">
@@ -251,23 +268,87 @@ export function Summary({ rows, total, refCode }: { rows: [string, string][]; to
   );
 }
 
+type PayStatus = "pending" | "verified" | "rejected" | "loading" | "unknown";
+
+/** Shows the payment status from the server, and refreshes it every 30 seconds */
+function usePaymentStatus(refCode: string): PayStatus {
+  const [status, setStatus] = useState<PayStatus>("loading");
+
+  useEffect(() => {
+    if (!refCode) return;
+    let alive = true;
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/status?ref=${encodeURIComponent(refCode)}`, { cache: "no-store" });
+        const data = (await res.json()) as { ok?: boolean; status?: string };
+        if (!alive) return;
+        if (data.ok && (data.status === "pending" || data.status === "verified" || data.status === "rejected")) {
+          setStatus(data.status);
+        } else {
+          setStatus("unknown");
+        }
+      } catch {
+        if (alive) setStatus("unknown");
+      }
+    };
+    check();
+    const id = setInterval(check, 30000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [refCode]);
+
+  return status;
+}
+
 export function DoneCard({ refCode, message, againLabel, onAgain, demo }: { refCode: string; message: string; againLabel: string; onAgain: () => void; demo?: boolean }) {
   const { t } = useLang();
   const copy = useCopy();
+  const status = usePaymentStatus(refCode);
+
+  const verified = status === "verified";
+  const rejected = status === "rejected";
+
+  const badge = verified
+    ? { text: t("payVerified"), cls: "bg-ok/15 text-ok" }
+    : rejected
+    ? { text: t("payRejected"), cls: "bg-danger-soft text-danger" }
+    : { text: t("pending"), cls: "bg-gold-soft text-gold-ink" };
+
+  const body = verified
+    ? t("payVerifiedP")
+    : rejected
+    ? t("payRejectedP")
+    : message;
+
   return (
     <div className="panel mx-auto flex max-w-xl flex-col items-center gap-4 text-center">
-      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="text-ok" aria-hidden>
+      <svg
+        width="60"
+        height="60"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        className={verified ? "text-ok" : rejected ? "text-danger" : "text-gold-ink"}
+        aria-hidden
+      >
         <circle cx="12" cy="12" r="10" />
-        <path d="M7 12.5l3.2 3L17 9" />
+        {verified ? <path d="M7 12.5l3.2 3L17 9" /> : rejected ? <path d="M9 9l6 6M15 9l-6 6" /> : <path d="M12 7v5l3 2" />}
       </svg>
+
       <h2 className="font-display text-2xl font-bold">{t("doneH")}</h2>
-      <span className="rounded-full bg-gold-soft px-3 py-1 text-sm font-semibold text-gold-ink">{t("pending")}</span>
+      <span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge.cls}`}>{badge.text}</span>
+
       <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="select-all rounded-xl bg-sunk px-4 py-2 font-mono text-xl tracking-wide">{refCode}</span>
         <button type="button" className="btn btn-ghost" onClick={() => copy(refCode)}>{t("copy")}</button>
       </div>
-      <p className="max-w-[50ch] text-muted">{message}</p>
+
+      <p className="max-w-[50ch] text-muted">{body}</p>
       {demo && <p className="rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger">{t("demoNote")}</p>}
+
       <div className="mt-2 flex flex-wrap justify-center gap-3">
         <Link href="/" className="btn btn-primary">{t("backHome")}</Link>
         <button type="button" className="btn btn-ghost" onClick={onAgain}>{againLabel}</button>

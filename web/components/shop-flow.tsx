@@ -8,6 +8,7 @@ import { useLang } from "./lang";
 import { GiftVisual, useToast } from "./ui";
 import { useDraft } from "./use-draft";
 import type { TKey } from "@/lib/i18n";
+import { Accented } from "./home";   // app/shop/page.tsx হলে: "@/components/home"
 
 type State = {
   ref: string;
@@ -199,7 +200,7 @@ export function ShopFlow() {
   return (
     <div className="gutter mx-auto max-w-5xl py-8 sm:py-12">
       <h1 className="font-display text-[clamp(1.9rem,5vw,2.8rem)] font-bold">{t("shopH")}</h1>
-      {!s.done && <p className="mt-1 max-w-[60ch] text-muted">{t("shopP")}</p>}
+      {!s.done && <p className="mt-1 max-w-[60ch] text-muted"><Accented text={t("shopP")} /></p>}
 
       {!ready ? (
         <div className="panel mt-6 h-64 animate-pulse" aria-hidden />
@@ -222,7 +223,10 @@ export function ShopFlow() {
                         <GiftVisual id={p.id} sizes="(min-width:1024px) 240px, 45vw" />
                       </div>
                       <div className="flex flex-wrap items-baseline justify-between gap-x-2 px-1">
-                        <span className="font-semibold">{t(`g_${p.id}`)}</span>
+                        <span className="font-semibold">
+  {t(`g_${p.id}`)}
+  {p.id === "scarf" && ` ${t("scarfMaybe")}`}
+</span>
                         <span className="bn-num-kalpurush text-lg font-semibold text-ink">{money(p.price)}</span>
                       </div>
 

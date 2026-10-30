@@ -198,7 +198,7 @@ function SectionHead({ eyebrow, title, lead }: { eyebrow: string; title: string;
 }
 
 /** লেখার ভেতরে {{...}} থাকলে সেই অংশ আলাদা ফন্টে (Kalpurush) দেখাবে */
-function Accented({ text }: { text: string }) {
+export function Accented({ text }: { text: string }) {
   const parts = text.split(/\{\{(.+?)\}\}/g);
   return (
     <>
@@ -219,9 +219,9 @@ function About() {
     <section id="about" className="gutter mx-auto max-w-4xl py-16">
       <div className="mb-8 flex max-w-[62ch] flex-col gap-2">
         <p className="eyebrow">{t("nAbout")}</p>
-        <h2 className="font-display text-[clamp(1.7rem,4vw,2.4rem)] font-bold leading-tight">
-          ইর্তিকা’<span className="bn-num-kalpurush">২১</span> কী?
-        </h2>
+<h2 className="font-display text-[clamp(1.7rem,4vw,2.4rem)] font-bold leading-tight">
+  <Accented text={t("aboutH")} />
+</h2>
       </div>
 
       <div className="font-sans flex flex-col gap-5 text-lg leading-loose text-ink sm:text-xl">

@@ -14,6 +14,7 @@ const NAV: { href: string; k: TKey }[] = [
   { href: "/#gallery", k: "nGallery" },
   { href: "/#gifts", k: "nGifts" },
   { href: "/#events", k: "nEvents" },
+  { href: "/status", k: "statusH" },
   { href: "/shop", k: "nShop" },
   { href: "#contact", k: "nContact" },
 ];
