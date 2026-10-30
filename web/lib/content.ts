@@ -126,7 +126,7 @@ export const SEGMENT_IMAGES: Partial<Record<(typeof SEGMENTS)[number], string>> 
   6: "/images/azadi-manch.png",
 };
 
-export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "gal5" | "gal6" | "gal7"; position?: string }[] = [
+export const GALLERY: { src: string; key: "gal1" | "gal2" | "gal3" | "gal4" | "gal6" | "gal7"; position?: string }[] = [
   { src: "/images/gallery-banner-handover.webp", key: "gal1" },
   { src: "/images/gallery-banner.webp", key: "gal2", position: "50% 22%" },
   { src: "/images/gallery-campus-team.webp", key: "gal3" },
